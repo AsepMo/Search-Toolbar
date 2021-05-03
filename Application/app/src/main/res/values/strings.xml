@@ -5,6 +5,9 @@
     <!-- =============================== -->
     <string name="app_name">YtSearch</string>
 
+    <string name="number_of_videos">Number of videos:</string>
+    <string name="status">Status:</string>
+    <string name="list_empty">List is empty!</string>
     <!-- =============================== -->
     <!--  Tab Drawer                     -->
     <!-- =============================== -->

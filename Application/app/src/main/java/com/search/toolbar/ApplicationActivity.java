@@ -4,6 +4,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.Loader;
 import android.support.v4.content.ContextCompat;
 import android.app.Activity;
 import android.content.Context;
@@ -20,6 +23,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.search.toolbar.youtube.fragment.YouTubeSearchFragment;
+import com.search.toolbar.youtube.listeners.OnItemSelected;
+import com.search.toolbar.youtube.listeners.OnFavoritesSelected;
+import com.search.toolbar.youtube.data.YouTubeSqlDb;
+import com.search.toolbar.youtube.utils.NetworkConf;
 import com.search.engine.widget.SearchBox;
 import com.search.engine.widget.SearchBox.MenuListener;
 import com.search.engine.widget.SearchBox.SearchListener;
@@ -31,8 +38,12 @@ import com.search.engine.widget.model.TabDrawerData;
 import com.search.engine.widget.model.TabListItem;
 
 import java.util.ArrayList;
+import java.util.List;
+import com.search.toolbar.youtube.utils.SuggestionsLoader;
+import com.search.toolbar.youtube.models.YouTubeSearch;
+import com.search.toolbar.youtube.models.YouTubePlaylist;
 
-public class ApplicationActivity extends AppCompatActivity {
+public class ApplicationActivity extends AppCompatActivity implements OnItemSelected, OnFavoritesSelected {
     private Boolean isSearch;
 	private SearchBox search;
     Context context;
@@ -46,10 +57,12 @@ public class ApplicationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_application);
 		context = this;
         activity = this;
+        YouTubeSqlDb.getInstance().init(this);
+
 		search = (SearchBox) findViewById(R.id.searchbox);
         search.setHint("Search");
         search.enableVoiceRecognition(this);
-        for(int x = 0; x < 10; x++){
+        for (int x = 0; x < 10; x++) {
             SearchResult option = new SearchResult("Result " + Integer.toString(x), R.drawable.ic_history);
             search.addSearchable(option);
         }
@@ -65,11 +78,11 @@ public class ApplicationActivity extends AppCompatActivity {
         search.setThumbnails("https://yt3.ggpht.com/ytc/AAUvwniXpFZbF9hWgU-51Xn6fLt1utL1h20Gt-MhNZuj=s800-c-k-c0x00ffffff-no-rj");
         search.setBackground(R.color.colorPrimary);
         search.setThumbnailsListener(new SearchBox.ThumbnailListener(){
-            @Override
-            public void onThumbnailClick(){
-                Toast.makeText(ApplicationActivity.this, "Thumbnails", Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onThumbnailClick() {
+                    Toast.makeText(ApplicationActivity.this, "Thumbnails", Toast.LENGTH_SHORT).show();
+                }
+            });
         search.setSearchListener(new SearchListener(){
 
                 @Override
@@ -92,8 +105,16 @@ public class ApplicationActivity extends AppCompatActivity {
 
                 @Override
                 public void onSearch(String searchTerm) {
-                    showFragment(new YouTubeSearchFragment());     
-                    Toast.makeText(ApplicationActivity.this, searchTerm +" Searched", Toast.LENGTH_LONG).show();
+                    // check network connection. If not available, do not query.
+                    // this also disables onSuggestionClick triggering
+                    YouTubeSearchFragment frag = YouTubeSearchFragment.newInstance();
+                    if (frag == null) {
+                        frag.searchQuery(searchTerm);
+                    }
+                    showFragment(frag);
+
+
+                    //Toast.makeText(ApplicationActivity.this, searchTerm +" Searched", Toast.LENGTH_LONG).show();
                 }
 
                 @Override
@@ -107,6 +128,7 @@ public class ApplicationActivity extends AppCompatActivity {
                 }
 
             });
+
         search.setOverflowMenu(R.menu.menu_application);
         search.setOverflowMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
@@ -119,9 +141,24 @@ public class ApplicationActivity extends AppCompatActivity {
                     return false;
                 }
             });
-        showFragment(new YouTubeSearchFragment());
+        //     showFragment(new YouTubeSearchFragment());
 
         prepareTabDrawer();
+    }
+
+    @Override
+    public void onVideoSelected(YouTubeSearch video) {
+
+
+    }
+
+    @Override
+    public void onPlaylistSelected(List<YouTubeSearch> playlist, int position) {
+        
+    }
+
+    @Override
+    public void onFavoritesSelected(YouTubeSearch video, boolean isChecked) {
     }
 
     private TabDrawerData prepareTabArray() {
@@ -194,7 +231,7 @@ public class ApplicationActivity extends AppCompatActivity {
                     .addTabListItem(new TabListItem("Shared Folders", R.drawable.ic_folder_shared_white_24dp))
                     .addTabListItem(new TabListItem("Cast to TV", R.drawable.ic_cast_white_24dp))
                     .addTabListItem(new TabListItem("Other Applications", R.drawable.ic_apps_white_24dp)));
-                    
+
     }
 
     public void showFragment(Fragment fragment) {
@@ -204,7 +241,7 @@ public class ApplicationActivity extends AppCompatActivity {
             .commitAllowingStateLoss();
     }
 
-   
+
 
     public void prepareTabDrawer() { prepareTabDrawer(false); }
 
@@ -240,7 +277,7 @@ public class ApplicationActivity extends AppCompatActivity {
 
                 Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
                 toast.show();
-                
+
                 if (tabPosition == 0) {
 
                     if (itemPosition == 0) {
@@ -254,7 +291,7 @@ public class ApplicationActivity extends AppCompatActivity {
                     } if (itemPosition == 4) {
                         showFragment(new YouTubeSearchFragment());
                     }
-                    
+
                 }
 
                 if (tabPosition == 1) {
@@ -266,7 +303,7 @@ public class ApplicationActivity extends AppCompatActivity {
                     }if (itemPosition == 2) {
                         showFragment(new YouTubeSearchFragment());     
                     }
-           
+
                 }
 
                 if (tabPosition == 2) {
@@ -282,7 +319,7 @@ public class ApplicationActivity extends AppCompatActivity {
                     } if (itemPosition == 4) {
                         showFragment(new YouTubeSearchFragment());     
                     }
-                    
+
                 }
 
                 if (tabPosition == 3) {
@@ -298,7 +335,7 @@ public class ApplicationActivity extends AppCompatActivity {
                     } if (itemPosition == 4) {
                         showFragment(new YouTubeSearchFragment());     
                     }
-                    
+
                 } 
 
                 if (tabPosition == 4) {
@@ -322,7 +359,7 @@ public class ApplicationActivity extends AppCompatActivity {
                     if (itemPosition == 7) {
                         showFragment(new YouTubeSearchFragment());     
                     }
-                    
+
                 } 
 
             }
@@ -335,13 +372,13 @@ public class ApplicationActivity extends AppCompatActivity {
     public void onBackPressed() {
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.content_frame);
-        if (fragment == null && tabDrawer.isDrawerOpen()){
+        if (fragment == null && tabDrawer.isDrawerOpen()) {
             tabDrawer.closeDrawer();
             fm.beginTransaction().remove(fragment).commitAllowingStateLoss();
 
-        }else{
+        } else {
             super.onBackPressed();
         }
     }
-    
+
 }

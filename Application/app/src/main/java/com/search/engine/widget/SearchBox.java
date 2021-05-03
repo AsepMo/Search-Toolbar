@@ -631,11 +631,11 @@ public class SearchBox extends RelativeLayout {
         searchRoot.setBackgroundDrawable(icon);
     }
 
-    public void setBackgroundColor(Integer icon) {
+    public void setBackground(Integer icon) {
         setBackground(getResources().getDrawable(icon));
     }
 
-    public void setBackground(int color) {
+    public void setBackgroundColor(int color) {
         searchRoot.setBackgroundColor(color);
     }
 
