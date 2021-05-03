@@ -1,6 +1,15 @@
 <resources>
-    <string name="app_name">Application</string>
+    
+    <!-- =============================== -->
+    <!--   Application  Name             -->
+    <!-- =============================== -->
+    <string name="app_name">YtSearch</string>
 
+    <!-- =============================== -->
+    <!--  Tab Drawer                     -->
+    <!-- =============================== -->
+    <!-- String For Search Toolbar -->
     <string name="speak_now">Speak now</string>
+    <string name="item_logo">Item Logo</string>
     
 </resources>
